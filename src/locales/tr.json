@@ -1,0 +1,99 @@
+{
+    "common": {
+      "welcome": "Hoş Geldiniz",
+      "login": "Giriş",
+      "register": "Kayıt Ol",
+      "logout": "Çıkış Yap",
+      "settings": "Ayarlar",
+      "home": "Ana Sayfa",
+      "save": "Kaydet",
+      "cancel": "İptal",
+      "send": "Gönder",
+      "search": "Ara",
+      "loading": "Yükleniyor...",
+      "error": "Hata",
+      "success": "Başarılı",
+      "back": "Geri",
+      "next": "İleri",
+      "yes": "Evet",
+      "no": "Hayır"
+    },
+    "auth": {
+      "username": "Kullanıcı Adı",
+      "password": "Şifre",
+      "confirmPassword": "Şifreyi Onayla",
+      "loginTitle": "Hesabınıza Giriş Yapın",
+      "registerTitle": "Yeni Hesap Oluşturun",
+      "registerSuccess": "Başarıyla kayıt oldunuz!",
+      "loginSuccess": "Başarıyla giriş yaptınız!",
+      "logoutSuccess": "Başarıyla çıkış yaptınız",
+      "usernameRequired": "Kullanıcı adı gerekli",
+      "usernameMinLength": "Kullanıcı adı en az 3 karakter olmalı",
+      "passwordRequired": "Şifre gerekli",
+      "passwordMinLength": "Şifre en az 6 karakter olmalı",
+      "passwordsDontMatch": "Şifreler eşleşmiyor"
+    },
+    "profile": {
+      "title": "Profilim",
+      "language": "Dil",
+      "therapyApproach": "Terapi Yaklaşımı",
+      "darkMode": "Karanlık Mod",
+      "voiceEnabled": "Ses Girişi",
+      "updateSuccess": "Profil başarıyla güncellendi"
+    },
+    "therapy": {
+      "approaches": {
+        "cbt": "Bilişsel Davranışçı Terapi",
+        "psychoanalytic": "Psikanalitik Terapi",
+        "humanistic": "Hümanistik Terapi",
+        "existential": "Varoluşçu Terapi",
+        "gestalt": "Gestalt Terapi",
+        "act": "Kabul ve Kararlılık Terapisi",
+        "positive": "Pozitif Psikoloji",
+        "schema": "Şema Terapi",
+        "solution_focused": "Çözüm Odaklı Terapi",
+        "narrative": "Naratif Terapi",
+        "family_systems": "Aile Sistemleri Terapisi",
+        "dbt": "Diyalektik Davranış Terapisi"
+      },
+      "newSession": "Yeni Seans",
+      "endSession": "Seansı Bitir",
+      "selectApproach": "Terapi Yaklaşımı Seçin",
+      "sessionHistory": "Seans Geçmişi",
+      "noSessions": "Henüz hiç seansınız yok",
+      "startConversation": "Konuşmaya başlayın...",
+      "sessionTitle": "Seans Başlığı",
+      "sessionCreated": "Seans başarıyla oluşturuldu",
+      "sessionEnded": "Seans başarıyla sonlandırıldı"
+    },
+    "chat": {
+      "messagePlaceholder": "Mesajınızı yazın...",
+      "voiceRecording": "Ses kaydediliyor...",
+      "startRecording": "Kayda başla",
+      "stopRecording": "Kaydı durdur",
+      "typeMessage": "Mesaj yaz",
+      "crisisDetected": "Kriz Durumu Tespit Edildi",
+      "emergencyContacts": "Acil Durum İletişimi",
+      "crisisMessage": "Şu anda zor bir durumda olduğunuzu anlıyoruz. Lütfen profesyonel yardım almayı düşünün."
+    },
+    "error": {
+      "generic": "Bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
+      "connection": "Bağlantı hatası. İnternet bağlantınızı kontrol edin.",
+      "server": "Sunucu hatası. Lütfen daha sonra tekrar deneyin.",
+      "notFound": "Sayfa bulunamadı.",
+      "unauthorized": "Bu işlemi yapmak için yetkili değilsiniz."
+    },
+    "landing": {
+      "title": "AI Psikoloğunuz",
+      "subtitle": "Gizlilik odaklı, yapay zeka destekli psikolojik destek",
+      "featureTitle1": "Tam Gizlilik",
+      "featureDesc1": "Verileriniz yerel cihazınızda kalır, hiçbir zaman sunucularımıza gönderilmez",
+      "featureTitle2": "12 Terapi Yaklaşımı",
+      "featureDesc2": "İhtiyacınıza göre farklı terapi yaklaşımlarından seçim yapın",
+      "featureTitle3": "Çok Dilli Destek",
+      "featureDesc3": "Türkçe ve İngilizce dillerinde destek alın",
+      "getStarted": "Hemen Başlayın",
+      "learnMore": "Daha Fazla Bilgi",
+      "disclaimer": "Bu uygulama profesyonel terapinin yerini alamaz. Acil durumlarda lütfen uzman yardımı alın."
+    }
+  }

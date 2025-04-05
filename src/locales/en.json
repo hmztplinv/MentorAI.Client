@@ -1,0 +1,99 @@
+{
+    "common": {
+      "welcome": "Welcome",
+      "login": "Login",
+      "register": "Register",
+      "logout": "Logout",
+      "settings": "Settings",
+      "home": "Home",
+      "save": "Save",
+      "cancel": "Cancel",
+      "send": "Send",
+      "search": "Search",
+      "loading": "Loading...",
+      "error": "Error",
+      "success": "Success",
+      "back": "Back",
+      "next": "Next",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "auth": {
+      "username": "Username",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "loginTitle": "Login to Your Account",
+      "registerTitle": "Create New Account",
+      "registerSuccess": "Successfully registered!",
+      "loginSuccess": "Successfully logged in!",
+      "logoutSuccess": "Successfully logged out",
+      "usernameRequired": "Username is required",
+      "usernameMinLength": "Username must be at least 3 characters",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "passwordsDontMatch": "Passwords don't match"
+    },
+    "profile": {
+      "title": "My Profile",
+      "language": "Language",
+      "therapyApproach": "Therapy Approach",
+      "darkMode": "Dark Mode",
+      "voiceEnabled": "Voice Input",
+      "updateSuccess": "Profile successfully updated"
+    },
+    "therapy": {
+      "approaches": {
+        "cbt": "Cognitive Behavioral Therapy",
+        "psychoanalytic": "Psychoanalytic Therapy",
+        "humanistic": "Humanistic Therapy",
+        "existential": "Existential Therapy",
+        "gestalt": "Gestalt Therapy",
+        "act": "Acceptance and Commitment Therapy",
+        "positive": "Positive Psychology",
+        "schema": "Schema Therapy",
+        "solution_focused": "Solution Focused Brief Therapy",
+        "narrative": "Narrative Therapy",
+        "family_systems": "Family Systems Therapy",
+        "dbt": "Dialectical Behavior Therapy"
+      },
+      "newSession": "New Session",
+      "endSession": "End Session",
+      "selectApproach": "Select Therapy Approach",
+      "sessionHistory": "Session History",
+      "noSessions": "You don't have any sessions yet",
+      "startConversation": "Start a conversation...",
+      "sessionTitle": "Session Title",
+      "sessionCreated": "Session successfully created",
+      "sessionEnded": "Session successfully ended"
+    },
+    "chat": {
+      "messagePlaceholder": "Type your message...",
+      "voiceRecording": "Recording voice...",
+      "startRecording": "Start recording",
+      "stopRecording": "Stop recording",
+      "typeMessage": "Type message",
+      "crisisDetected": "Crisis Situation Detected",
+      "emergencyContacts": "Emergency Contacts",
+      "crisisMessage": "We understand you're going through a difficult time. Please consider seeking professional help."
+    },
+    "error": {
+      "generic": "An error occurred. Please try again later.",
+      "connection": "Connection error. Please check your internet connection.",
+      "server": "Server error. Please try again later.",
+      "notFound": "Page not found.",
+      "unauthorized": "You are not authorized to perform this action."
+    },
+    "landing": {
+      "title": "Your AI Psychologist",
+      "subtitle": "Privacy-focused, AI-powered psychological support",
+      "featureTitle1": "Complete Privacy",
+      "featureDesc1": "Your data stays on your local device, never sent to our servers",
+      "featureTitle2": "12 Therapy Approaches",
+      "featureDesc2": "Choose from different therapy approaches based on your needs",
+      "featureTitle3": "Multilingual Support",
+      "featureDesc3": "Get support in Turkish and English languages",
+      "getStarted": "Get Started",
+      "learnMore": "Learn More",
+      "disclaimer": "This application cannot replace professional therapy. In case of emergency, please seek expert help."
+    }
+  }
