@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
-import { sessionService, chatService, voiceService } from '../api/services';
+import { sessionService, chatService } from '../api/services';
 import Button from '../components/common/Button';
 import Alert from '../components/common/Alert';
 import Loading from '../components/common/Loading';
@@ -68,47 +68,177 @@ const SessionChat = () => {
     scrollToBottom();
   }, [messages]);
   
-  // Ses kaydı için gereken bileşenleri hazırla
+  // Ses kaydı için MediaRecorder setup
   useEffect(() => {
-    let mounted = true;
+    let recorder = null;
+    let stream = null;
+    let chunks = []; // Doğrudan hafızada saklayacağımız ses parçaları
     
-    // Ses kaydı yapılabilir mi kontrol et
-    const checkAudioPermission = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        if (mounted) {
-          // MediaRecorder oluştur
-          const recorder = new MediaRecorder(stream);
-          
-          // Veri topla
-          recorder.ondataavailable = (e) => {
-            if (e.data.size > 0) {
-              setAudioChunks((chunks) => [...chunks, e.data]);
-            }
-          };
-          
-          // Kayıt tamamlandığında
-          recorder.onstop = async () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            await handleVoiceSubmit(audioBlob);
-            setAudioChunks([]);
-          };
-          
-          setMediaRecorder(recorder);
+    // Tarayıcının desteklediği ses formatlarını kontrol et
+    const getSupportedMimeType = () => {
+      // Desteklenen formatlar - API'nizin kabul ettiği formatlarla eşleşen
+      const types = [
+        'audio/webm',           // Chrome/Firefox genellikle destekler
+        'audio/mp3',            // API'niz destekliyor
+        'audio/ogg',            // API'niz destekliyor
+        'audio/wav',            // API'niz destekliyor
+        'audio/mpeg',           // API'niz destekliyorsa
+        'audio/aac',            // API'niz destekliyorsa
+        '',                     // Varsayılan (tarayıcının kararına bırak)
+      ];
+      
+      for (const type of types) {
+        try {
+          if (type && MediaRecorder.isTypeSupported(type)) {
+            console.log(`Desteklenen MIME tipi bulundu: ${type}`);
+            return type;
+          }
+        } catch (e) {
+          console.log(`MIME tipi kontrol hatası: ${type}, hata: ${e.message}`);
         }
+      }
+      
+      // Eğer hiçbir belirli tip desteklenmiyorsa, varsayılan formatı kullan
+      console.log("Özel format desteklenmedi, varsayılan format kullanılacak");
+      return '';
+    };
+    
+    const setupRecorder = async () => {
+      try {
+        console.log("Mikrofon erişimi isteniyor...");
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log("Mikrofon erişimi sağlandı");
+        
+        // Tarayıcının desteklediği en uygun formatı seç
+        const mimeType = getSupportedMimeType();
+        
+        // MediaRecorder oluştur
+        const options = mimeType ? { mimeType } : {}; 
+        recorder = new MediaRecorder(stream, options);
+        console.log("MediaRecorder oluşturuldu, kullanılan MIME tipi:", recorder.mimeType);
+        
+        // Ses verisi toplandığında
+        recorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            console.log("Ses verisi alındı, boyut:", event.data.size);
+            chunks.push(event.data); // Lokal değişkene ekliyoruz, state'e değil
+          }
+        };
+        
+        // Kayıt durdurulduğunda
+        recorder.onstop = () => {
+          console.log("Kayıt durduruldu, chunks:", chunks.length);
+          
+          if (chunks.length > 0) {
+            // Blob oluştur - recorder'ın MIME tipini kullan
+            const audioBlob = new Blob(chunks, { type: recorder.mimeType });
+            console.log("AudioBlob oluşturuldu, format:", recorder.mimeType, "boyut:", audioBlob.size);
+            
+            // Dosya uzantısını çıkar - API'ye doğru uzantı ile göndermek için
+            const mimeStr = recorder.mimeType.toLowerCase();
+            let extension = 'webm'; // Varsayılan
+            
+            if (mimeStr.includes('webm')) extension = 'webm';
+            else if (mimeStr.includes('ogg')) extension = 'ogg';
+            else if (mimeStr.includes('mp3') || mimeStr.includes('mpeg')) extension = 'mp3';
+            else if (mimeStr.includes('wav')) extension = 'wav';
+            else if (mimeStr.includes('aac')) extension = 'm4a';
+            
+            console.log(`Dosya uzantısı belirlendi: ${extension}`);
+            
+            // Blob'u API'ye gönder
+            sendAudioToAPI(audioBlob, extension);
+            
+            // Temizlik
+            chunks = [];
+          } else {
+            console.error("Ses verisi yok!");
+            setError("Ses kaydı alınamadı. Lütfen tekrar deneyin.");
+          }
+        };
+        
+        setMediaRecorder(recorder);
       } catch (err) {
-        console.error('Error accessing microphone:', err);
+        console.error("Mikrofon erişimi hatası:", err);
+        setError("Mikrofona erişilemedi: " + err.message);
       }
     };
     
     if (currentUser?.voice_enabled) {
-      checkAudioPermission();
+      setupRecorder();
     }
     
     return () => {
-      mounted = false;
+      // Cleanup
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
     };
-  }, [currentUser, audioChunks]);
+  }, [currentUser]);
+  
+  // Bu fonksiyon artık kullanılmıyor, direkt MediaRecorder.onstop içinde işlem yapıyoruz
+  
+  // API'ye ses gönderme
+  const sendAudioToAPI = async (audioBlob, extension = 'ogg') => {
+    try {
+      setSending(true);
+      console.log("API'ye ses gönderiliyor...", audioBlob.size, "bytes, format:", audioBlob.type);
+      
+      // FormData hazırla
+      const formData = new FormData();
+      // Dosya adını doğru uzantıyla belirt
+      formData.append('file', audioBlob, `recording.${extension}`);
+      
+      // Direkt olarak backend URL'sine gönder - query parametreleri URL'de
+      const apiUrl = `http://localhost:8000/api/v1/voice/send?session_id=${sessionId}&language=tr`;
+      console.log("API URL:", apiUrl);
+      
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        body: formData
+      });
+      
+      console.log("İlk yanıt:", response.status, response.statusText);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("API hata yanıtı:", errorText);
+        throw new Error(`API yanıt hatası: ${response.status} - ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log("API yanıtı:", data);
+      
+      // Kullanıcı mesajını ekle
+      const userMessage = {
+        id: Date.now(),
+        role: 'user',
+        content: data.transcribed_text || data.text || "Ses mesajı",
+        is_voice: true,
+        created_at: new Date().toISOString()
+      };
+      
+      // AI yanıtını ekle
+      const aiMessage = {
+        id: Date.now() + 1,
+        role: 'assistant',
+        content: data.response,
+        created_at: new Date().toISOString()
+      };
+      
+      setMessages(prev => [...prev, userMessage, aiMessage]);
+      
+      // Kriz durumu bildirimi
+      if (data.crisis_detected && data.emergency_info) {
+        setCrisisInfo(data.emergency_info);
+      }
+    } catch (err) {
+      console.error("API hatası:", err);
+      setError("Ses mesajı gönderilemedi: " + err.message);
+    } finally {
+      setSending(false);
+    }
+  };
   
   // Mesaj gönder
   const handleSubmit = async (e) => {
@@ -159,60 +289,41 @@ const SessionChat = () => {
   
   // Ses kaydını başlat
   const startRecording = () => {
-    if (mediaRecorder) {
-      setIsRecording(true);
+    if (!mediaRecorder) {
+      console.error("MediaRecorder hazır değil!");
+      setError("Ses kaydedici hazır değil. Lütfen sayfayı yenileyip tekrar deneyin.");
+      return;
+    }
+    
+    try {
+      console.log("Kayıt başlatılıyor...");
       setAudioChunks([]);
+      setIsRecording(true);
       mediaRecorder.start();
+    } catch (err) {
+      console.error("Kayıt başlatma hatası:", err);
+      setError("Ses kaydı başlatılamadı: " + err.message);
     }
   };
   
   // Ses kaydını durdur
   const stopRecording = () => {
-    if (mediaRecorder && isRecording) {
-      setIsRecording(false);
-      mediaRecorder.stop();
+    if (!mediaRecorder || !isRecording) {
+      console.error("Kayıt durdurulamıyor: MediaRecorder hazır değil veya kayıt yapılmıyor");
+      return;
     }
-  };
-  
-  // Ses dosyasını gönder
-  const handleVoiceSubmit = async (audioBlob) => {
-    if (!audioBlob || sending) return;
     
     try {
-      setSending(true);
+      console.log("Kayıt durduruluyor...");
+      setIsRecording(false);
       
-      // API'ye ses dosyasını gönder
-      const response = await voiceService.sendVoiceMessage(sessionId, audioBlob);
-      
-      // Kullanıcı mesajını ekle (transcribe edilmiş içerikle)
-      const userMessage = {
-        id: Date.now(),
-        role: 'user',
-        content: response.data.transcribed_text || "Ses mesajı",
-        is_voice: true,
-        created_at: new Date().toISOString()
-      };
-      
-      // AI yanıtını ekle
-      const aiMessage = {
-        id: Date.now() + 1,
-        role: 'assistant',
-        content: response.data.response,
-        created_at: new Date().toISOString()
-      };
-      
-      setMessages((prev) => [...prev, userMessage, aiMessage]);
-      
-      // Kriz durumu bildirimi
-      if (response.data.crisis_detected && response.data.emergency_info) {
-        setCrisisInfo(response.data.emergency_info);
-      }
-      
+      // MediaRecorder.stop() çağrısı önce state güncellemesinin tamamlanmasını beklesin
+      setTimeout(() => {
+        mediaRecorder.stop();
+      }, 0);
     } catch (err) {
-      console.error('Error sending voice message:', err);
-      setError(err.message || 'Ses mesajı gönderilirken bir hata oluştu.');
-    } finally {
-      setSending(false);
+      console.error("Kayıt durdurma hatası:", err);
+      setError("Ses kaydı durdurulamadı: " + err.message);
     }
   };
   
@@ -223,14 +334,30 @@ const SessionChat = () => {
       try {
         setSending(true);
         
-        // Ses dosyasını gönder
-        const response = await voiceService.sendVoiceMessage(sessionId, file);
+        // Ses dosyasını FormData ile hazırla
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // Fetch API ile gönder - query parametreler URL'de
+        const response = await fetch(`http://localhost:8000/api/v1/voice/send?session_id=${sessionId}&language=tr`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("API hata yanıtı:", errorText);
+          throw new Error(`API yanıt hatası: ${response.status} - ${errorText}`);
+        }
+        
+        const data = await response.json();
+        console.log("API yanıtı:", data);
         
         // Kullanıcı mesajını ekle
         const userMessage = {
           id: Date.now(),
           role: 'user',
-          content: response.data.transcribed_text || "Ses mesajı",
+          content: data.transcribed_text || data.text || "Ses mesajı",
           is_voice: true,
           created_at: new Date().toISOString()
         };
@@ -239,7 +366,7 @@ const SessionChat = () => {
         const aiMessage = {
           id: Date.now() + 1,
           role: 'assistant',
-          content: response.data.response,
+          content: data.response,
           created_at: new Date().toISOString()
         };
         
