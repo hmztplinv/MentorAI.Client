@@ -4,11 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/common/Button';
 import {
-  SparklesIcon,
-  ShieldCheckIcon,
-  GlobeAltIcon,
-  ChatBubbleLeftRightIcon,
-  BrainIcon
+  SparklesIcon, 
+  LightBulbIcon, 
+  ChatBubbleLeftRightIcon, 
+  GlobeAltIcon, 
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 
 const Home = () => {
@@ -85,7 +85,7 @@ const Home = () => {
               <div className="relative">
                 <dt>
                   <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white">
-                    <BrainIcon className="h-6 w-6" aria-hidden="true" />
+                    <LightBulbIcon className="h-6 w-6" aria-hidden="true" />
                   </div>
                   <p className="ml-16 text-lg leading-6 font-medium text-gray-900 dark:text-white">
                     {t('landing.featureTitle2')}
@@ -138,7 +138,7 @@ const AuthenticatedHome = ({ user }) => {
     {
       id: 'psychoanalytic',
       title: t('therapy.approaches.psychoanalytic'),
-      icon: <BrainIcon className="h-6 w-6" />,
+      icon: <ShieldCheckIcon className="h-6 w-6" />,
       color: 'bg-therapist-psychoanalytic',
     },
     {
@@ -162,7 +162,7 @@ const AuthenticatedHome = ({ user }) => {
     {
       id: 'dbt',
       title: t('therapy.approaches.dbt'),
-      icon: <BrainIcon className="h-6 w-6" />,
+      icon: <LightBulbIcon className="h-6 w-6" />,
       color: 'bg-therapist-dbt',
     },
   ];
