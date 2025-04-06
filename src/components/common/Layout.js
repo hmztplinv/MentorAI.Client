@@ -33,7 +33,7 @@ const Layout = ({ children }) => {
       {currentUser && (
         <div className="hidden md:flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-center h-16 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">AI Psikolog</h2>
+            <a href="/"><h2 className="text-xl font-semibold text-gray-800 dark:text-white">Mentor AI</h2></a>
           </div>
           <div className="flex flex-col flex-grow p-4 overflow-y-auto">
             <nav className="flex-1 space-y-2">
@@ -226,7 +226,7 @@ const Layout = ({ children }) => {
               <div className="flex justify-between h-16">
                 <div className="flex items-center">
                   <Link to="/" className="text-xl font-bold text-gray-800 dark:text-white">
-                    AI Psikolog
+                    Mentor AI
                   </Link>
                 </div>
                 <div className="flex items-center space-x-4">
