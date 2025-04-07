@@ -13,7 +13,9 @@ import {
   ArrowLeftIcon,
   XMarkIcon,
   ExclamationTriangleIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  SpeakerWaveIcon,
+  SpeakerXMarkIcon
 } from '@heroicons/react/24/solid';
 
 const SessionChat = () => {
@@ -35,6 +37,7 @@ const SessionChat = () => {
   const [audioChunks, setAudioChunks] = useState([]);
   const [confirmEndSession, setConfirmEndSession] = useState(false);
   const [crisisInfo, setCrisisInfo] = useState(null);
+  const [speakingMessageId, setSpeakingMessageId] = useState(null);
   
   // Otomatik kaydırma için
   const scrollToBottom = () => {
@@ -173,10 +176,10 @@ const SessionChat = () => {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
+      // Sayfa değiştiğinde veya kapandığında seslendirmeyi durdur
+      window.speechSynthesis.cancel();
     };
   }, [currentUser]);
-  
-  // Bu fonksiyon artık kullanılmıyor, direkt MediaRecorder.onstop içinde işlem yapıyoruz
   
   // API'ye ses gönderme
   const sendAudioToAPI = async (audioBlob, extension = 'ogg') => {
@@ -302,6 +305,33 @@ const SessionChat = () => {
     } finally {
       setSending(false);
     }
+  };
+
+  // Metni sesli okuma fonksiyonu
+  const speakText = (text, messageId) => {
+    // Eğer konuşma zaten devam ediyorsa durdur
+    if (speakingMessageId === messageId) {
+      window.speechSynthesis.cancel();
+      setSpeakingMessageId(null);
+      return;
+    }
+    
+    // Diğer konuşmaları durdur
+    window.speechSynthesis.cancel();
+    
+    // Yeni konuşma oluştur
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Dil ayarı (kullanıcı diline göre)
+    utterance.lang = currentUser?.language === 'en' ? 'en-US' : 'tr-TR';
+    
+    // Konuşma olaylarını dinle
+    utterance.onstart = () => setSpeakingMessageId(messageId);
+    utterance.onend = () => setSpeakingMessageId(null);
+    utterance.onerror = () => setSpeakingMessageId(null);
+    
+    // Konuşmayı başlat
+    window.speechSynthesis.speak(utterance);
   };
   
   // Ses kaydını başlat
@@ -499,6 +529,28 @@ const SessionChat = () => {
                 >
                   {message.is_voice && <span className="text-xs mr-1">🎤</span>}
                   <p className="whitespace-pre-wrap">{message.content}</p>
+                  
+                  {/* Asistan mesajları için sesli okuma butonu */}
+                  {message.role === 'assistant' && (
+                    <button 
+                      onClick={() => speakText(message.content, message.id)}
+                      className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 mt-1 flex items-center text-xs"
+                      aria-label={speakingMessageId === message.id ? "Seslendirmeyi durdur" : "Sesli dinle"}
+                    >
+                      {speakingMessageId === message.id ? (
+                        <>
+                          <SpeakerXMarkIcon className="h-4 w-4 mr-1" />
+                          Durdur
+                        </>
+                      ) : (
+                        <>
+                          <SpeakerWaveIcon className="h-4 w-4 mr-1" />
+                          Sesli Dinle
+                        </>
+                      )}
+                    </button>
+                  )}
+
                   <div
                     className={`text-xs mt-1 ${
                       message.role === 'user'
@@ -706,6 +758,3 @@ const SessionChat = () => {
 };
 
 export default SessionChat;
-
-
-
