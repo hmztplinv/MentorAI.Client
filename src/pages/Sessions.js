@@ -10,7 +10,9 @@ import {
   ChatBubbleLeftRightIcon,
   ClockIcon,
   PlusIcon,
-  TrashIcon
+  TrashIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/outline';
 
 const Sessions = () => {
@@ -23,26 +25,48 @@ const Sessions = () => {
   const [error, setError] = useState(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState(null);
+  
+  // Pagination için state'ler
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pageSize, setPageSize] = useState(10); // Sayfa başına 5 oturum
+  const [totalSessions, setTotalSessions] = useState(0);
+
+  const fetchSessions = async (page = currentPage) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Sayfalama için hesaplama
+      const skip = (page - 1) * pageSize;
+      
+      const response = await sessionService.getUserSessions(currentUser.id, skip, pageSize);
+      
+      // API'ın döndürdüğü veriye göre işlem yapılması
+      if (response.data && response.data.total !== undefined) {
+        // Eğer API total ve items gibi alanlar dönüyorsa
+        setSessions(response.data.items || response.data.sessions || []);
+        setTotalSessions(response.data.total);
+        setTotalPages(Math.ceil(response.data.total / pageSize));
+      } else {
+        // API sadece items listesi dönüyorsa
+        setSessions(response.data);
+        setTotalSessions(response.data.length); // Bu durumda sadece bu sayfadaki verileri sayabiliyoruz
+        setTotalPages(Math.ceil(response.data.length / pageSize));
+      }
+    } catch (err) {
+      console.error('Error fetching sessions:', err);
+      setError(err.message || 'Oturumlar yüklenirken bir hata oluştu.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchSessions = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await sessionService.getUserSessions(currentUser.id);
-        setSessions(response.data);
-      } catch (err) {
-        console.error('Error fetching sessions:', err);
-        setError(err.message || 'Oturumlar yüklenirken bir hata oluştu.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (currentUser) {
       fetchSessions();
     }
-  }, [currentUser]);
+  }, [currentUser, pageSize]);
 
   const handleDeleteSession = async (sessionId) => {
     try {
@@ -50,6 +74,14 @@ const Sessions = () => {
       setSessions(sessions.filter(session => session.id !== sessionId));
       setDeleteModalOpen(false);
       setSessionToDelete(null);
+      
+      // Eğer son sayfadaki son öğeyi sildiysek ve başka sayfa varsa, bir önceki sayfaya git
+      if (sessions.length === 1 && currentPage > 1) {
+        handlePageChange(currentPage - 1);
+      } else {
+        // Aynı sayfayı yenile
+        fetchSessions(currentPage);
+      }
     } catch (err) {
       console.error('Error deleting session:', err);
       setError(err.message || 'Oturum silinirken bir hata oluştu.');
@@ -59,6 +91,25 @@ const Sessions = () => {
   const openDeleteModal = (session) => {
     setSessionToDelete(session);
     setDeleteModalOpen(true);
+  };
+
+  // Sayfa değiştirme fonksiyonları
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > totalPages) return;
+    setCurrentPage(newPage);
+    fetchSessions(newPage);
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      handlePageChange(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      handlePageChange(currentPage - 1);
+    }
   };
 
   // Terapi yaklaşımını Türkçe göstermek için
@@ -187,6 +238,57 @@ const Sessions = () => {
               </li>
             ))}
           </ul>
+          
+          {/* Pagination Controls */}
+          {sessions.length > 0 && (
+            <div className="px-4 py-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-700 dark:text-gray-300">
+                  <span className="font-medium">{((currentPage - 1) * pageSize) + 1}</span> - <span className="font-medium">{Math.min(currentPage * pageSize, totalSessions)}</span> / <span className="font-medium">{totalSessions}</span> oturum
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Button
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1}
+                    variant="ghost"
+                    size="small"
+                    className="px-2 py-1"
+                  >
+                    <ChevronLeftIcon className="h-4 w-4 mr-1" />
+                    Önceki
+                  </Button>
+                  
+                  <div className="flex items-center space-x-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-3 py-1 rounded text-sm ${
+                          currentPage === page
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <Button
+                    onClick={goToNextPage}
+                    disabled={currentPage === totalPages}
+                    variant="ghost"
+                    size="small"
+                    className="px-2 py-1"
+                  >
+                    Sonraki
+                    <ChevronRightIcon className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
       
