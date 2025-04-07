@@ -180,65 +180,82 @@ const SessionChat = () => {
   
   // API'ye ses gönderme
   const sendAudioToAPI = async (audioBlob, extension = 'ogg') => {
-    try {
-      setSending(true);
-      console.log("API'ye ses gönderiliyor...", audioBlob.size, "bytes, format:", audioBlob.type);
-      
-      // FormData hazırla
-      const formData = new FormData();
-      // Dosya adını doğru uzantıyla belirt
-      formData.append('file', audioBlob, `recording.${extension}`);
-      
-      // Direkt olarak backend URL'sine gönder - query parametreleri URL'de
-      const apiUrl = `http://localhost:8000/api/v1/voice/send?session_id=${sessionId}&language=tr`;
-      console.log("API URL:", apiUrl);
-      
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        body: formData
-      });
-      
-      console.log("İlk yanıt:", response.status, response.statusText);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("API hata yanıtı:", errorText);
-        throw new Error(`API yanıt hatası: ${response.status} - ${errorText}`);
-      }
-      
-      const data = await response.json();
-      console.log("API yanıtı:", data);
-      
-      // Kullanıcı mesajını ekle
-      const userMessage = {
+  try {
+    setSending(true);
+    console.log("API'ye ses gönderiliyor...", audioBlob.size, "bytes, format:", audioBlob.type);
+
+    const formData = new FormData();
+    formData.append('file', audioBlob, `recording.${extension}`);
+
+    const apiUrl = `http://localhost:8000/api/v1/voice/send?session_id=${sessionId}&language=tr`;
+    console.log("API URL:", apiUrl);
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      body: formData
+    });
+
+    console.log("İlk yanıt:", response.status, response.statusText);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("API hata yanıtı:", errorText);
+      throw new Error(`API yanıt hatası: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log("API yanıtı:", data);
+
+    const transcribedText = data.transcribed_text || data.text || "Ses mesajı";
+
+    const userMessageExists = messages.some(msg =>
+      msg.role === 'user' &&
+      msg.content === transcribedText &&
+      msg.is_voice === true
+    );
+
+    const aiMessageExists = messages.some(msg =>
+      msg.role === 'assistant' &&
+      msg.content === data.response
+    );
+
+    const newMessages = [];
+
+    if (!userMessageExists) {
+      newMessages.push({
         id: Date.now(),
         role: 'user',
-        content: data.transcribed_text || data.text || "Ses mesajı",
+        content: transcribedText,
         is_voice: true,
         created_at: new Date().toISOString()
-      };
-      
-      // AI yanıtını ekle
-      const aiMessage = {
+      });
+    }
+
+    if (!aiMessageExists) {
+      newMessages.push({
         id: Date.now() + 1,
         role: 'assistant',
         content: data.response,
         created_at: new Date().toISOString()
-      };
-      
-      setMessages(prev => [...prev, userMessage, aiMessage]);
-      
-      // Kriz durumu bildirimi
-      if (data.crisis_detected && data.emergency_info) {
-        setCrisisInfo(data.emergency_info);
-      }
-    } catch (err) {
-      console.error("API hatası:", err);
-      setError("Ses mesajı gönderilemedi: " + err.message);
-    } finally {
-      setSending(false);
+      });
     }
-  };
+
+    // Burada tek seferde state'e ekleniyor
+    if (newMessages.length > 0) {
+      setMessages(prev => [...prev, ...newMessages]);
+    }
+
+    if (data.crisis_detected && data.emergency_info) {
+      setCrisisInfo(data.emergency_info);
+    }
+
+  } catch (err) {
+    console.error("API hatası:", err);
+    setError("Ses mesajı gönderilemedi: " + err.message);
+  } finally {
+    setSending(false);
+  }
+};
   
   // Mesaj gönder
   const handleSubmit = async (e) => {
