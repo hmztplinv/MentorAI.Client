@@ -26,7 +26,6 @@ const Login = () => {
     e.preventDefault();
     setFormError(null);
     
-    // Form doğrulama
     if (!formData.username) {
       setFormError(t('auth.usernameRequired'));
       return;

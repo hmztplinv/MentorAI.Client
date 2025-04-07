@@ -25,7 +25,6 @@ const Profile = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
 
-  // Terapi yaklaşımları için seçenekler
   const therapyOptions = [
     { value: 'cbt', label: t('therapy.approaches.cbt') },
     { value: 'psychoanalytic', label: t('therapy.approaches.psychoanalytic') },
@@ -41,13 +40,12 @@ const Profile = () => {
     { value: 'dbt', label: t('therapy.approaches.dbt') },
   ];
 
-  // Dil seçenekleri
+
   const languageOptions = [
     { value: 'tr', label: 'Türkçe' },
     { value: 'en', label: 'English' },
   ];
 
-  // Mevcut kullanıcı bilgilerini form verilerine yükle
   useEffect(() => {
     if (currentUser) {
       setFormData({
@@ -74,21 +72,17 @@ const Profile = () => {
     setSuccessMessage('');
 
     try {
-      // Tema değişikliklerini uygula
       if (formData.dark_mode !== darkMode) {
         toggleTheme();
       }
       
-      // Dil değişikliklerini uygula
       if (formData.language !== language) {
         changeLanguage(formData.language);
       }
       
-      // Kullanıcı bilgilerini güncelle
       await updateUserSettings(currentUser.id, formData);
       setSuccessMessage(t('profile.updateSuccess'));
       
-      // Başarı mesajını bir süre sonra kaldır
       setTimeout(() => {
         setSuccessMessage('');
       }, 3000);

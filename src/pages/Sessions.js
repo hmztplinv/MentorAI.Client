@@ -26,10 +26,10 @@ const Sessions = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState(null);
   
-  // Pagination için state'ler
+
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize, setPageSize] = useState(10); // Sayfa başına 5 oturum
+  const [pageSize, setPageSize] = useState(10); 
   const [totalSessions, setTotalSessions] = useState(0);
 
   const fetchSessions = async (page = currentPage) => {
@@ -37,21 +37,18 @@ const Sessions = () => {
       setLoading(true);
       setError(null);
       
-      // Sayfalama için hesaplama
+ 
       const skip = (page - 1) * pageSize;
       
       const response = await sessionService.getUserSessions(currentUser.id, skip, pageSize);
       
-      // API'ın döndürdüğü veriye göre işlem yapılması
       if (response.data && response.data.total !== undefined) {
-        // Eğer API total ve items gibi alanlar dönüyorsa
         setSessions(response.data.items || response.data.sessions || []);
         setTotalSessions(response.data.total);
         setTotalPages(Math.ceil(response.data.total / pageSize));
       } else {
-        // API sadece items listesi dönüyorsa
         setSessions(response.data);
-        setTotalSessions(response.data.length); // Bu durumda sadece bu sayfadaki verileri sayabiliyoruz
+        setTotalSessions(response.data.length); 
         setTotalPages(Math.ceil(response.data.length / pageSize));
       }
     } catch (err) {
@@ -75,11 +72,9 @@ const Sessions = () => {
       setDeleteModalOpen(false);
       setSessionToDelete(null);
       
-      // Eğer son sayfadaki son öğeyi sildiysek ve başka sayfa varsa, bir önceki sayfaya git
       if (sessions.length === 1 && currentPage > 1) {
         handlePageChange(currentPage - 1);
       } else {
-        // Aynı sayfayı yenile
         fetchSessions(currentPage);
       }
     } catch (err) {
@@ -93,7 +88,6 @@ const Sessions = () => {
     setDeleteModalOpen(true);
   };
 
-  // Sayfa değiştirme fonksiyonları
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > totalPages) return;
     setCurrentPage(newPage);
@@ -112,12 +106,10 @@ const Sessions = () => {
     }
   };
 
-  // Terapi yaklaşımını Türkçe göstermek için
   const getTherapyApproachName = (approachKey) => {
     return t(`therapy.approaches.${approachKey}`);
   };
 
-  // Tarih formatlama
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('tr-TR', {

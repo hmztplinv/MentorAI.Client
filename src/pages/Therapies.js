@@ -21,7 +21,6 @@ const Therapies = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  // Tüm terapi yaklaşımları
   const therapies = [
     {
       id: 'cbt',
@@ -109,7 +108,6 @@ const Therapies = () => {
     }
   ];
 
-  // Yeni seans başlat
   const startNewSession = (therapyApproach) => {
     navigate('/new-session', { state: { therapyApproach } });
   };

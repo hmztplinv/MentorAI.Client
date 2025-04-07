@@ -22,7 +22,6 @@ const Register = () => {
   });
   const [formError, setFormError] = useState(null);
 
-  // Terapi yaklaşımları için seçenekler
   const therapyOptions = [
     { value: 'cbt', label: t('therapy.approaches.cbt') },
     { value: 'psychoanalytic', label: t('therapy.approaches.psychoanalytic') },
@@ -38,7 +37,6 @@ const Register = () => {
     { value: 'dbt', label: t('therapy.approaches.dbt') },
   ];
 
-  // Dil seçenekleri
   const languageOptions = [
     { value: 'tr', label: 'Türkçe' },
     { value: 'en', label: 'English' },
